@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPK Beasiswa</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>SPK Penerima Beasiswa - Weighted Sum Model</h1>
+        <h2>Nabila Khairunnisa (211011400012)</h2>
+        <form id="spkForm">
+            <table id="inputTable">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama</th>
+                        <th>Nilai Ujian Masuk (40%)</th>
+                        <th>Prestasi Akademik (30%)</th>
+                        <th>Aktivitas Ekstrakurikuler (20%)</th>
+                        <th>Asal Sekolah (10%)</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Baris akan ditambahkan oleh JavaScript -->
+                </tbody>
+            </table>
+            <button type="submit">Hitung</button>
+        </form>
+        <div id="result">
+            <h2>Hasil Perhitungan</h2>
+            <table id="resultTable">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama</th>
+                        <th>Total Nilai</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Hasil perhitungan akan ditambahkan di sini -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputTable = document.getElementById('inputTable');
+            const spkForm = document.getElementById('spkForm');
+            const resultTable = document.querySelector('#resultTable tbody');
+
+            // Array nama untuk 100 data
+            const namaArray = [
+                "Nabila", "Nada", "Zikri", "Sumi", "Salim", "Amin", "Fadil", "Hasan", "Lina", "Rani", 
+                "Yusuf", "Siti", "Dian", "Ilham", "Raka", "Hana", "Faris", "Aisyah", "Rio", "Putri", 
+                "Aldi", "Indra", "Zahra", "Sinta", "Eko", "Riska", "Budi", "Ayu", "Rian", "Fitri", 
+                "Ika", "Fauzi", "Lisa", "Andi", "Rini", "Joko", "Mira", "Toni", "Devi", "Bayu", 
+                "Ira", "Arif", "Tia", "Hendra", "Dinda", "Dani", "Rika", "Edo", "Maya", "Agus", 
+                "Vina", "Feri", "Melati", "Imam", "Retno", "Sandi", "Ratna", "Wawan", "Rizki", "Wati", 
+                "Bagas", "Rahma", "Doni", "Yani", "Galih", "Hani", "Arman", "Kartika", "Adi", "Gina", 
+                "Wira", "Anisa", "Hafiz", "Indah", "Aldi", "Silvi", "Fauzan", "Fany", "Iwan", "Mega", 
+                "Aditya", "Hesti", "Dedi", "Nia", "Ramdan", "Sari", "Akbar", "Erna", "Tama", "Zahira", 
+                "Rio", "Elsa", "Yuni", "Fahrul", "Dianita", "Wildan", "Cindy", "Rendra", "Alia"
+            ];
+
+            // Fungsi untuk mendapatkan nilai random dalam rentang tertentu
+            function getRandomInt(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+            function getRandomFloat(min, max, decimals = 2) {
+                const rand = Math.random() * (max - min) + min;
+                return parseFloat(rand.toFixed(decimals));
+            }
+
+            // Tambahkan data otomatis
+            function addDummyData() {
+                const tableBody = inputTable.querySelector('tbody');
+                namaArray.forEach((name, index) => {
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td class="row-number">${index + 1}</td>
+                        <td><input type="text" name="nama[]" value="${name}" required></td>
+                        <td><input type="number" name="num[]" value="${getRandomInt(75, 85)}" step="1" required></td>
+                        <td><input type="number" name="pa[]" value="${getRandomFloat(2.7, 3.5)}" step="0.01" required></td>
+                        <td><input type="number" name="ae[]" value="${getRandomInt(0, 3)}" step="1" required></td>
+                        <td><input type="number" name="as[]" value="${getRandomInt(0, 1)}" step="1" required></td>
+                        <td><button type="button" class="removeRow">Hapus</button></td>
+                    `;
+                    tableBody.appendChild(newRow);
+                });
+            }
+
+            // Hapus baris input
+            inputTable.addEventListener('click', (event) => {
+                if (event.target.classList.contains('removeRow')) {
+                    const row = event.target.closest('tr');
+                    row.remove();
+                    updateRowNumbers();
+                }
+            });
+
+            // Perbarui nomor urut
+            function updateRowNumbers() {
+                const rows = document.querySelectorAll('#inputTable tbody tr');
+                rows.forEach((row, index) => {
+                    row.querySelector('.row-number').textContent = index + 1;
+                });
+            }
+
+            // Proses perhitungan
+            spkForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const formData = new FormData(event.target);
+                const nama = formData.getAll('nama[]');
+                const num = formData.getAll('num[]').map(Number);
+                const pa = formData.getAll('pa[]').map(Number);
+                const ae = formData.getAll('ae[]').map(Number);
+                const as = formData.getAll('as[]').map(Number);
+
+                const bobot = [0.4, 0.3, 0.2, 0.1];
+                resultTable.innerHTML = '';
+
+                // Hitung nilai maksimal untuk setiap kriteria
+                const maxNum = Math.max(...num);
+                const maxPa = Math.max(...pa);
+                const maxAe = Math.max(...ae);
+                const maxAs = Math.max(...as);
+
+                // Simpan hasil
+                const results = [];
+                nama.forEach((name, index) => {
+                    const normalizedNum = num[index] / maxNum;
+                    const normalizedPa = pa[index] / maxPa;
+                    const normalizedAe = ae[index] / maxAe;
+                    const normalizedAs = as[index] / maxAs;
+                    const total = (normalizedNum * bobot[0]) + (normalizedPa * bobot[1]) + (normalizedAe * bobot[2]) + (normalizedAs * bobot[3]);
+                    results.push({ name, total });
+                });
+
+                // Urutkan dan tambahkan hasil ke tabel
+                results.sort((a, b) => b.total - a.total);
+                results.forEach((result, index) => {
+                    const row = `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${result.name}</td>
+                            <td>${result.total.toFixed(2)}</td>
+                        </tr>`;
+                    resultTable.innerHTML += row;
+                });
+            });
+
+            // Tambahkan data dummy saat halaman dimuat
+            addDummyData();
+        });
+    </script>
+</body>
+</html>
